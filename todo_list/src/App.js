@@ -1,8 +1,17 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import "./App.css";
+
 const App = () => {
   const [todos, setTodos] = useState([]);
-  const [todoEditing, setTodoEditing] = useState([]);
+  const [todoEditing, setTodoEditing] = useState(null);
+
+  useEffect(() => {
+    if(todos.length > 0) {
+        const json = JSON.stringify(todos);
+        localStorage.setItem("todos", json);
+    }
+  }, [todos]);
+
   // Add the handlesubmit code here
   function handleSubmit(e){
       e.preventDefault();
@@ -40,8 +49,16 @@ const App = () => {
 
   
   // Add the submitEdits code here
-  function submitEdits(){
+  function submitEdits(id){
+    let updatedTodos = todos.map(todo => {
+        if (todo.id === id){
+            todo.text = document.getElementById(id).value;
+        }
+        return todo;
+    });
 
+    setTodos(updatedTodos);
+    setTodoEditing(0);
   }
   
 return(
@@ -54,18 +71,15 @@ return(
 <div>
     {todos.map((todo) => 
         <div className="todo" key={todo.id}>
-            if (todoEditing){
+            {todoEditing === todo.id ? (
                 <div>
-                    <input type="text" placeholder={todo.text}></input>
-                    <button>Confirm</button>
-                </div>
-            }
-            else{
-                <div>
+                    <input type="text" defaultValue={todo.text} id={todo.id}></input>
+                    <button className="todo-actions" onClick={() => submitEdits(todo.id)}>Confirm</button>
+                </div>) :
+                (<div>
                     <div className="todo-text">{todo.text}</div>
-                    <button>Edit</button>
-                </div>
-                
+                    <button className="todo-actions" onClick={() => setTodoEditing(todo.id)}>Edit</button>
+                </div>)
             }
             
             <input type="checkbox" onChange={() => toggleCompleteted(todo.id)} checked={todo.completed}></input>
